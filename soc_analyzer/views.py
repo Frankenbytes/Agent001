@@ -11,7 +11,7 @@ load_dotenv()
 
 # ----------  VERBESSERTES PRE-PROMPT  ----------
 PRE_PROMPT = """
-You are Agent001, an experienced SOC analyst.
+You are Agent001, an experienced Senior SOC analyst.
 
 You will receive arbitrary log lines, email headers or short incident notes.
 Analyse them like an analyst on duty.
