@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>LLM Chat (Stream)</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 2rem; }
+      textarea { width: 100%; }
+      #output { white-space: pre-wrap; border: 1px solid #ccc; padding: 1rem; margin-top: 1rem; min-height: 10rem; }
+    </style>
+</head>
+<body>
+  <h2>Chat mit Agent001 (Streaming)</h2>
+
+  <textarea id="input" rows="4" placeholder="Schreib hier deinen Klartext-Alert …"></textarea>
+  <br>
+  <button id="send">Senden</button>
+
+  <h3>Antwort</h3>
+  <div id="output"></div>
+
+<script>
+const inputEl  = document.getElementById('input');
+const outputEl = document.getElementById('output');
+const sendBtn  = document.getElementById('send');
+
+sendBtn.addEventListener('click', async () => {
+  const text = inputEl.value.trim();
+  if (!text) return;
+
+  sendBtn.disabled = true;
+  outputEl.textContent = '';           // leeren
+  const payload = JSON.stringify({ alert: text });
+
+  try {
+    const res = await fetch('/alerts/stream/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: payload
+    });
+
+    if (!res.ok || !res.body) {
+      throw new Error(`HTTP ${res.status}`);
+    }
+
+    const reader  = res.body.getReader();
+    const decoder = new TextDecoder('utf-8');
+
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      outputEl.textContent += decoder.decode(value, { stream: true });
+      // Auto-Scroll ans Ende
+      outputEl.scrollTop = outputEl.scrollHeight;
+    }
+  } catch (err) {
+    outputEl.textContent = `[ERROR] ${err}`;
+  } finally {
+    sendBtn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>
